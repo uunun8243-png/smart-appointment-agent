@@ -165,6 +165,3 @@ python eval/benchmark_latency.py  # 首 token / 完整响应延迟
 pytest
 ```
 
-## 说明
-
-本项目基于一个开源的多 Agent 预约系统二次开发，在其之上完成了上文「核心改进」所列的增强，并重新整理了文档与工程结构。
