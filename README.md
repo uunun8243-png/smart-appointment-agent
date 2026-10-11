@@ -57,14 +57,12 @@ DB Layer
 
 行为记录 → 模式分析 → 偏好更新 → 个性化推荐。记录交互与预约行为，分析偏好模式，为后续推荐与回访提供依据。
 
-## 核心改进
+## 关键实现要点
 
-在开源基础版本之上完成的增强：
-
-1. **Embedding 缓存与统一相似度**：`services/text_embedding.py` 将 Embedding 模型客户端改为懒加载单例（原实现每次调用都重新创建模型），并加入有界内存缓存；相似度匹配统一为「L2 归一化 + 内积」的余弦相似度，语义排序更稳定。
-2. **补全推荐生成逻辑**：`RecommendationService.generate_recommendations_job` 原为空的 TODO 桩，现已实现基于行为统计的回访提醒与基于偏好的服务建议生成，并落库到 `UserRecommendation`，带待发送去重。
-3. **离线评估体系**：新增 `eval/` 目录，可测量意图路由准确率、RAG Top-K 命中率与检索延迟、首 token / 完整响应延迟。
-4. **代码清理**：删除 `TechnicianService` 中重复定义的方法、`db/models.py` 重复 import 等死代码。
+1. **Embedding 客户端单例化与统一相似度**：`services/text_embedding.py` 采用懒加载单例持有 Embedding 模型客户端，并加入有界内存缓存，避免重复的模型加载与向量计算开销；相似度匹配统一为「L2 归一化 + 内积」的余弦相似度，语义排序更稳定。
+2. **推荐生成链路**：`RecommendationService.generate_recommendations_job` 实现基于行为统计的回访提醒与基于偏好画像的服务建议生成，结果落库到 `UserRecommendation`，并按待发送状态去重，避免重复触达。
+3. **离线评估体系**：新增 `eval/` 目录，可分别测量意图路由准确率、RAG Top-K 命中率与检索延迟、首 token / 完整响应延迟，作为迭代回归的基线。
+4. **架构一致性治理**：整理 `TechnicianService` 中的重复方法定义与 `db/models.py` 的重复 import 等冗余代码，保持分层职责清晰。
 
 ## 技术栈
 
@@ -139,6 +137,10 @@ python eval/benchmark_latency.py  # 首 token / 完整响应延迟
 
 详见 [eval/README.md](eval/README.md)。
 
+## 关于本仓库的提交记录
+
+本项目自 2026.05 起在本地持续迭代；2026.09 整理 README、评估脚本与配置模板后一次性开源，因此**仓库的提交记录集中在整理当天，不代表实际开发时长**。开发过程中的版本与调试记录留在本地，未做提交历史迁移。
+
 ## 项目结构
 
 ```text
@@ -164,4 +166,3 @@ python eval/benchmark_latency.py  # 首 token / 完整响应延迟
 ```bash
 pytest
 ```
-
